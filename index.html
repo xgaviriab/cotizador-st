@@ -563,6 +563,39 @@ $('btnGen').addEventListener('click',()=>{
 $('brandLogo').src=BRAND.white.d;
 initInv();renderCatalog();render();sums();
 
+/* ---------- registro de uso (panel de Santiago) ---------- */
+const ASESORES=[
+  {n:'Alexandra Ferreira N. · Asesor Comercial',t:'3156704214',e:'ventasmostrador2@solucionestubulares.com'},
+  {n:'Biviana Barreto · Sub-Gerente',t:'3153136940',e:'biviana@solucionestubulares.com'},
+  {n:'Santiago Gaviria',t:'3153136932',e:'sgaviria@solucionestubulares.com'}];
+const DEV=(()=>{let d=LS.get('stp_dev',null);if(!d){d=Math.random().toString(36).slice(2,10);LS.set('stp_dev',d)}return d})();
+function quien(){return ($('aName').value||'').split(' · ')[0].trim()}
+function enviar(tipo,extra){const body=JSON.stringify({tipo,asesor:quien(),asesorTel:$('aPhone').value,asesorEmail:$('aEmail').value,dev:DEV,movil:matchMedia('(max-width: 760px)').matches,...extra});
+  try{if(navigator.sendBeacon&&navigator.sendBeacon('/api/evento',new Blob([body],{type:'application/json'})))return}catch(e){}
+  try{fetch('/api/evento',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{})}catch(e){}}
+function resumenCot(){const C=calc();return {num:S.num,cliente:$('cName').value,nit:$('cNit').value,contacto:$('cContact').value,telefono:$('cPhone').value,ciudad:$('cCity').value,
+  pago:PLAZOS[S.pago],lista:LISTAS[S.lista],lineas:C.rows.map(r=>({item:itemOf(r.p.ref),desc:r.p.desc,qty:r.l.qty,lista:LISTAS[r.lp],net:r.net,tot:r.tot})),
+  base:C.base,iva:C.iva,total:C.total,peso:Math.round(C.peso)}}
+// identificación del asesor (una vez por equipo; se puede cambiar en "Asesor y condiciones")
+(function(){const st=document.createElement('style');st.textContent=`.whoBack{position:fixed;inset:0;background:rgba(10,20,40,.55);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
+.whoBox{background:var(--surface,#fff);color:inherit;border-radius:18px;max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.whoBox h3{margin:0 0 4px;font-size:20px}.whoBox p{margin:0 0 14px;color:var(--muted,#666);font-size:13.5px}
+.whoBox button.op{display:block;width:100%;text-align:left;border:1px solid var(--line,#ddd);background:transparent;color:inherit;border-radius:12px;padding:11px 14px;margin:0 0 8px;font:inherit;cursor:pointer}
+.whoBox button.op:hover{border-color:#182D4E}.whoBox input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line,#ddd);border-radius:10px;font:inherit;margin:4px 0 10px;background:transparent;color:inherit}`;document.head.appendChild(st)})();
+function pedirAsesor(){const bk=document.createElement('div');bk.className='whoBack';
+  bk.innerHTML=`<div class="whoBox" role="dialog" aria-modal="true" aria-label="¿Quién está cotizando?"><h3>¿Quién está cotizando?</h3><p>Tu nombre sale en el PDF y en el reporte de cotizaciones.</p>
+  ${ASESORES.map((a,i)=>`<button class="op" data-a="${i}"><b>${esc(a.n.split(' · ')[0])}</b><br><small style="color:var(--muted,#666)">${esc(a.e)}</small></button>`).join('')}
+  <details><summary style="cursor:pointer;font-size:13px;margin:6px 0 8px">Otro asesor</summary><input id="whoN" placeholder="Nombre y apellido"><input id="whoT" placeholder="Celular"><input id="whoE" placeholder="Correo"><button class="btn primary" id="whoOk" style="width:100%">Continuar</button></details></div>`;
+  document.body.appendChild(bk);
+  const set=(n,t,e)=>{$('aName').value=n;$('aPhone').value=t;$('aEmail').value=e;saveDraft();bk.remove();enviar('apertura',{});toast('Hola, '+n.split(' ')[0])};
+  bk.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b){const a=ASESORES[+b.dataset.a];set(a.n,a.t,a.e)}});
+  bk.querySelector('#whoOk').addEventListener('click',()=>{const n=bk.querySelector('#whoN').value.trim();if(n.length<3){toast('Escribe tu nombre');return}set(n,bk.querySelector('#whoT').value.trim(),bk.querySelector('#whoE').value.trim())})}
+if(!quien())pedirAsesor();else enviar('apertura',{});
+$('btnGen').addEventListener('click',()=>{$('sendStatus').innerHTML=''},true);
+$('btnGen').addEventListener('click',()=>{if(/PDF descargado/.test($('sendStatus').textContent))enviar('pdf',{cot:resumenCot()})});
+$('btnWa').addEventListener('click',()=>{if(!$('btnWa').classList.contains('off'))enviar('whatsapp',{cot:resumenCot()})});
+$('btnCopy').addEventListener('click',()=>{if(S.lines.length)enviar('resumen',{cot:resumenCot()})});
+
 }
 boot();
 </script>

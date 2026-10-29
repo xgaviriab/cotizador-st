@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Panel del Cotizador ST</title>
+<style>
+:root{--bg:#f4f5f7;--surface:#fff;--surface-2:#eef0f3;--fg:#111418;--muted:#5d6670;--line:#dfe3e8;--navy:#182D4E;--yel:#FFD500;--ok:#1a7f4b;--accent:#1f6feb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--surface:#161b22;--surface-2:#1f2630;--fg:#e8ecf1;--muted:#9aa4b0;--line:#2a323d;--accent:#58a6ff}}
+:root[data-theme="dark"]{--bg:#0e1116;--surface:#161b22;--surface-2:#1f2630;--fg:#e8ecf1;--muted:#9aa4b0;--line:#2a323d;--accent:#58a6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:var(--navy);color:#fff;border-bottom:4px solid var(--yel)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header .wrap{display:flex;align-items:center;gap:14px;min-height:68px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;font-weight:700}header small{opacity:.75;font-size:12.5px}
+.sp{flex:1}
+.chips{display:flex;gap:3px;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.chips button{border:0;background:transparent;color:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--yel);color:var(--navy);font-weight:700}
+main{padding-top:20px;padding-bottom:40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi .v{font-size:26px;font-weight:750;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12.5px;color:var(--muted)}
+.kpi.hl{border-left:4px solid var(--yel)}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel h2{font-size:15px;margin:0;padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.panel h2 span{font-weight:400;color:var(--muted);font-size:12.5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.bars{display:flex;align-items:flex-end;gap:4px;height:150px;padding:14px 16px 4px}
+.bars .c{flex:1;min-width:6px;background:var(--surface-2);border-radius:4px 4px 0 0;position:relative;height:100%;display:flex;align-items:flex-end}
+.bars .c i{display:block;width:100%;background:var(--navy);border-radius:4px 4px 0 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bars .c i{background:var(--yel)}}
+.bx{display:flex;gap:4px;padding:0 16px 12px;font-size:10.5px;color:var(--muted)}.bx span{flex:1;text-align:center;min-width:6px;overflow:hidden}
+.feed .q{padding:13px 16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:4px 16px}
+.feed .q:last-child{border-bottom:0}
+.q .t{font-weight:700}.q .m{font-size:12.5px;color:var(--muted)}
+.q .tot{font-weight:800;font-size:17px;text-align:right;font-variant-numeric:tabular-nums}
+.q ul{margin:4px 0 0;padding-left:18px;font-size:13px}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--surface-2);color:var(--muted);margin-right:4px}
+.tag.pdf{background:#e6eefb;color:#1d4fa3}.tag.wa{background:#e3f6ea;color:#16794a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tag.pdf{background:#1b2c48;color:#8db7ff}:root:not([data-theme="light"]) .tag.wa{background:#163223;color:#7ee2a8}}
+.tools{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tools input,.tools select{font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);flex:1;min-width:160px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.gate{max-width:380px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}
+.gate input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin:10px 0;background:var(--surface);color:var(--fg)}
+.gate button,.btn{background:var(--navy);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+.upd{font-size:12px;opacity:.8}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;margin-right:6px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div><h1>Panel del Cotizador</h1><small>Quién usa la herramienta, qué se cotiza y por cuánto</small></div>
+  <div class="sp"></div>
+  <div class="chips" id="per" role="group" aria-label="Periodo">
+    <button data-d="1">Hoy</button><button data-d="7" aria-pressed="true">7 días</button><button data-d="30">30 días</button><button data-d="90">90 días</button>
+  </div>
+  <span class="upd" id="upd"></span>
+</div></header>
+<main class="wrap" id="app"></main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cop=n=>'$ '+Math.round(n||0).toLocaleString('es-CO');
+const copM=n=>{n=n||0;if(n>=1e6)return '$ '+(n/1e6).toLocaleString('es-CO',{maximumFractionDigits:1})+' M';return cop(n)};
+const LSg=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}},LSs=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const qs=new URLSearchParams(location.search);
+let KEY=qs.get('k')||LSg('stpanel_k','');if(qs.get('k')){LSs('stpanel_k',KEY);history.replaceState(null,'',location.pathname)}
+let DIAS=+LSg('stpanel_d','7')||7,EV=[],Q='',AS='';
+const fh=ts=>new Date(ts).toLocaleString('es-CO',{timeZone:'America/Bogota',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const dia=ts=>new Date(ts).toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
+function gate(msg){$('app').innerHTML=`<div class="gate"><h2 style="margin:0 0 6px">Clave del panel</h2><div style="color:var(--muted);font-size:13.5px">${msg||'Escribe la clave para ver el uso del cotizador.'}</div><input id="k" type="password" autocomplete="off"><button id="go">Entrar</button></div>`;
+  $('go').onclick=()=>{KEY=$('k').value.trim();LSs('stpanel_k',KEY);load()};$('k').onkeydown=e=>{if(e.key==='Enter')$('go').click()}}
+async function load(){if(!KEY){gate();return}
+  try{const r=await fetch('/api/panel?dias='+DIAS+'&k='+encodeURIComponent(KEY),{cache:'no-store'});
+    if(r.status===401){KEY='';LSs('stpanel_k','');gate('Clave incorrecta.');return}
+    const j=await r.json();EV=j.eventos||[];$('upd').innerHTML='<span class="dot"></span>Actualizado '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});render()}
+  catch(e){$('upd').textContent='Sin conexión, reintentando…'}}
+function quotes(evs){const m=new Map();evs.filter(e=>e.cot&&e.cot.num&&(e.tipo==='pdf'||e.tipo==='whatsapp')).sort((a,b)=>a.ts-b.ts).forEach(e=>{const o=m.get(e.cot.num)||{canales:new Set(),primera:e.ts};o.cot=e.cot;o.asesor=e.asesor;o.ts=e.ts;o.movil=e.movil;o.canales.add(e.tipo);m.set(e.cot.num,o)});return [...m.values()].sort((a,b)=>b.ts-a.ts)}
+function render(){
+  const Qs=quotes(EV);const ab=EV.filter(e=>e.tipo==='apertura');
+  const ases=new Map();const A=n=>{if(!ases.has(n))ases.set(n,{n,ab:0,q:0,m:0,last:0,dev:new Set(),mov:0});return ases.get(n)};
+  ab.forEach(e=>{const a=A(e.asesor);a.ab++;a.last=Math.max(a.last,e.ts);a.dev.add(e.dev);if(e.movil)a.mov++});
+  Qs.forEach(q=>{const a=A(q.asesor);a.q++;a.m+=q.cot.base||0;a.last=Math.max(a.last,q.ts)});
+  const tot=Qs.reduce((s,q)=>s+(q.cot.base||0),0);
+  const days=[];for(let i=Math.min(DIAS,30)-1;i>=0;i--){const d=dia(Date.now()-i*864e5);days.push({d,v:Qs.filter(q=>dia(q.ts)===d).reduce((s,q)=>s+(q.cot.base||0),0),n:Qs.filter(q=>dia(q.ts)===d).length})}
+  const mx=Math.max(1,...days.map(x=>x.v));
+  const AL=[...ases.values()].sort((a,b)=>b.m-a.m||b.ab-a.ab);
+  const t=Q.toLowerCase();const F=Qs.filter(q=>(!AS||q.asesor===AS)&&(!t||(q.cot.cliente+' '+q.cot.nit+' '+q.cot.num+' '+q.cot.lineas.map(l=>l.desc).join(' ')).toLowerCase().includes(t)));
+  $('app').innerHTML=`
+  <div class="kpis">
+   <div class="kpi hl"><div class="l">Monto cotizado</div><div class="v">${copM(tot)}</div><div class="s">antes de IVA · ${Qs.length} cotizaci${Qs.length==1?'ón':'ones'}</div></div>
+   <div class="kpi"><div class="l">Cotizaciones</div><div class="v">${Qs.length}</div><div class="s">${Qs.filter(q=>q.canales.has('pdf')).length} con PDF · ${Qs.filter(q=>q.canales.has('whatsapp')).length} por WhatsApp</div></div>
+   <div class="kpi"><div class="l">Ticket promedio</div><div class="v">${Qs.length?copM(tot/Qs.length):'—'}</div><div class="s">por cotización</div></div>
+   <div class="kpi"><div class="l">Asesores activos</div><div class="v">${AL.length}</div><div class="s">${ab.length} ingreso${ab.length==1?'':'s'} al cotizador</div></div>
+  </div>
+  <div class="grid">
+   <section class="panel"><h2>Por asesor <span>${DIAS==1?'hoy':'últimos '+DIAS+' días'}</span></h2><div class="tw"><table>
+    <thead><tr><th>Asesor</th><th class="n">Ingresos</th><th class="n">Cotizaciones</th><th class="n">Monto</th><th>Última actividad</th></tr></thead>
+    <tbody>${AL.length?AL.map(a=>`<tr><td><b>${esc(a.n)}</b><div style="font-size:12px;color:var(--muted)">${a.dev.size} equipo${a.dev.size==1?'':'s'}${a.mov?' · usa celular':''}</div></td><td class="n">${a.ab}</td><td class="n">${a.q}</td><td class="n"><b>${copM(a.m)}</b></td><td>${a.last?fh(a.last):'—'}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">Todavía nadie ha usado el cotizador en este periodo.</td></tr>'}</tbody></table></div></section>
+   <section class="panel"><h2>Monto cotizado por día <span>${days.length} días</span></h2>
+    <div class="bars">${days.map(x=>`<div class="c" title="${x.d}: ${cop(x.v)} · ${x.n} cot."><i style="height:${x.v/mx*100}%"></i></div>`).join('')}</div>
+    <div class="bx">${days.map((x,i)=>`<span>${i%Math.ceil(days.length/8)===0||i===days.length-1?x.d.slice(8)+'/'+x.d.slice(5,7):''}</span>`).join('')}</div></section>
+  </div>
+  <section class="panel feed"><h2>Últimas cotizaciones <span>${F.length} de ${Qs.length}</span></h2>
+   <div class="tools"><input id="q" placeholder="Buscar cliente, NIT, número o producto…" value="${esc(Q)}"><select id="as"><option value="">Todos los asesores</option>${AL.map(a=>`<option ${a.n===AS?'selected':''}>${esc(a.n)}</option>`).join('')}</select></div>
+   ${F.length?F.slice(0,150).map(q=>{const c=q.cot;const ls=c.lineas||[];return `<div class="q"><div><div class="t">${esc(c.cliente||'Cliente sin nombre')}${c.nit?` <span class="m">· NIT ${esc(c.nit)}</span>`:''}</div>
+     <div class="m">${fh(q.ts)} · <b>${esc(q.asesor)}</b> · ${esc(c.num)}${c.ciudad?' · '+esc(c.ciudad):''}</div>
+     <ul>${ls.slice(0,3).map(l=>`<li>${(+l.qty).toLocaleString('es-CO')} × ${esc(l.desc)} <span class="m">(ítem ${esc(l.item)}${l.lista&&l.lista!=='Contado'?' · lista '+esc(l.lista):''})</span></li>`).join('')}${ls.length>3?`<li class="m">y ${ls.length-3} producto${ls.length-3==1?'':'s'} más</li>`:''}</ul></div>
+     <div><div class="tot">${cop(c.base)}</div><div class="m" style="text-align:right">Total con IVA ${cop(c.total)}<br>Pago ${esc(c.pago||'—')} · ${(c.peso||0).toLocaleString('es-CO')} kg</div>
+     <div style="text-align:right;margin-top:6px">${q.canales.has('pdf')?'<span class="tag pdf">PDF</span>':''}${q.canales.has('whatsapp')?'<span class="tag wa">WhatsApp</span>':''}</div></div></div>`}).join(''):'<div class="empty">No hay cotizaciones con estos filtros.</div>'}
+  </section>`;
+  $('q').oninput=e=>{Q=e.target.value;const p=e.target.selectionStart;render();$('q').focus();$('q').setSelectionRange(p,p)};
+  $('as').onchange=e=>{AS=e.target.value;render()};
+}
+document.querySelectorAll('#per button').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.d===DIAS);b.onclick=()=>{DIAS=+b.dataset.d;LSs('stpanel_d',DIAS);document.querySelectorAll('#per button').forEach(x=>x.setAttribute('aria-pressed',x===b));load()}});
+load();setInterval(()=>{if(KEY&&document.visibilityState==='visible')load()},60000);
+</script>
+</body>
+</html>
