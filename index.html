@@ -1,4 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.btn.off{opacity:.45;pointer-events:none}
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.pagobox{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between;border-bottom:1px solid var(--line);border-left:4px solid #FFD500;background:var(--surface-2)}
+.pagobox small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
+.pagobox .plazo{background:var(--surface)}
+.pagobox .plazo button[aria-pressed=true]{background:#182D4E;color:#fff}
+select.lp{font:inherit;font-size:12.5px;padding:5px 6px;min-width:100px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit}
+input.disc:disabled{opacity:.55;background:transparent}
+.btn.off{opacity:.45;pointer-events:none}
 </style></head><body>
 
 <title>Cotizador ST</title>
@@ -257,13 +263,14 @@ table.q select{padding:6px 10px;width:auto;font-size:13px;font-weight:500}
         <div><button class="btn navy" id="btnImp">Importar</button> <span id="impMsg" style="font-size:12px;color:var(--muted)"></span></div>
       </div>
     </details>
+    <div class="pb pagobox"><div><b>Plazo de pago de la factura</b><small>Recaudo de cartera · sale en el PDF como condición de pago. No cambia los precios.</small></div><div class="plazo" id="pago" role="group" aria-label="Plazo de pago de la factura"></div></div>
     <div class="pb" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)">
-      <span style="font-size:13px;color:var(--muted);font-weight:500">Plazo</span>
-      <div class="plazo" id="plazo" role="group" aria-label="Plazo de pago"></div>
+      <span style="font-size:13px;color:var(--muted);font-weight:500">Lista de precios</span>
+      <div class="plazo" id="plazo" role="group" aria-label="Lista de precios"></div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);font-weight:700">Descuento a todo %<input type="number" id="mAll" min="0" max="2" step="0.5" style="width:76px"></label></div>
     </div>
     <div class="tablewrap"><table class="t lines">
-      <thead><tr><th>Producto</th><th class="n">Cant.</th><th class="n">Peso total</th><th class="n">Desc. %</th><th class="n">Precio unit.</th><th class="n">Subtotal</th><th></th></tr></thead>
+      <thead><tr><th>Producto</th><th class="n">Cant.</th><th class="n">Peso total</th><th>Lista</th><th class="n">Desc. %</th><th class="n">Precio unit.</th><th class="n">Subtotal</th><th></th></tr></thead>
       <tbody id="lines"></tbody></table></div>
     <div class="empty" id="emptyLines" hidden>Elige línea, medida y espesor a la izquierda y presiona Agregar.</div>
     <div class="pb obsbox">
@@ -318,6 +325,8 @@ const itm=p=>{const v=_IT[p.ref];return v==null||String(v).trim()===''?p.ref:Str
 P.forEach(p=>p.k=norm(itm(p)+' '+p.ref+' '+p.desc+' '+p.fab+' '+p.lin));
 const LINE_ORDER=['Tubería estructural','Tubo cerramiento','Tubo mueble','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Accesorios de acero','Conduit y conducción','PVC presión y acueducto','PVC sanitaria y alcantarillado','CPVC y agua caliente','Aquatherm PP-R','PVC y CPVC (otros)','Soldaduras PVC y pinturas','Soldadura y protección','Otros'];
 const PLAZOS=['Contado','15 días','30 días','45 días','60 días'];
+/* Listas de precios por producto: contado a 60 días (2% por cada 15 días) y 'Ajustado', con descuento limitado sobre el precio de contado */
+const LISTAS=[...PLAZOS,'Ajustado'];const AJ=5;const lpPlazo=lp=>lp===AJ?0:lp;
 const IVA=0.19;
 const $=id=>document.getElementById(id);
 const cop=n=>'$ '+Math.round(n||0).toLocaleString('es-CO');
@@ -382,12 +391,12 @@ function renderCatalog(){
   const showRes=toks.length||(F.lin&&(F.med||A.length<=30||!steps.length));
   A=A.slice().sort((a,b)=>{const ma=a.med||'~',mb=b.med||'~';const c=(ma==='~'||mb==='~')?(ma===mb?0:ma==='~'?1:-1):natCmp(ma,mb);return c||thick(a)-thick(b)||((b.len||0)-(a.len||0))||(a.o-b.o)});
   shown=showRes?A.slice(0,120):[];
-  const pl=S.plazo;
+  const pl=lpPlazo(S.lista);
   $('results').innerHTML=shown.map((p,i)=>`<div class="res">
     <div><div class="d">${esc(p.desc)}</div><div class="s"><span>${esc(p.fab)}</span><span class="ref">Ítem ${esc(itm(p))}</span>${p.len?`<span class="chip info">${p.lenL}</span>`:''}${p.peso?`<span>${kg(p.peso)}</span>`:''}${stockChip(p)}</div></div>
     <div><div class="p">${cop(price(p,0,pl))}</div>${(p.len||perKg(p))?`<div style="text-align:right;font-size:11.5px;color:var(--fg)">${[p.len?cop(price(p,0,pl)/p.len)+' / m':'',perKg(p)?cop(price(p,0,pl)/p.peso)+' / kg':''].filter(Boolean).join(' · ')}</div>`:''}
     <div class="addbox"><input type="number" min="1" value="1" id="aq${i}" aria-label="Cantidad"><button class="btn primary sm" data-add="${i}">Agregar</button></div></div></div>`).join('');
-  $('resInfo').textContent=showRes?(A.length?`${A.length} producto${A.length==1?'':'s'}${A.length>shown.length?' · mostrando '+shown.length:''} · ${PLAZOS[pl].toLowerCase()}`:'Sin resultados. Quita un filtro o usa menos palabras.'):(F.lin?'Elige una medida para ver los productos.':'Toca una línea para empezar, o busca por texto.');
+  $('resInfo').textContent=showRes?(A.length?`${A.length} producto${A.length==1?'':'s'}${A.length>shown.length?' · mostrando '+shown.length:''} · lista ${LISTAS[S.lista].toLowerCase()}`:'Sin resultados. Quita un filtro o usa menos palabras.'):(F.lin?'Elige una medida para ver los productos.':'Toca una línea para empezar, o busca por texto.');
 }
 function stockChip(p){const n=v=>Math.round(v||0).toLocaleString('es-CO');const disp=(p.st||0)+(p.buf||0);const a=[];
   a.push(disp>0?`<span class="chip ok" title="Propio libre + buffer">Disponible ${n(disp)}</span>`:'<span class="chip mute">0 disponibles</span>');
@@ -404,8 +413,9 @@ $('results').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id&&e.t
 /* ---------- cotización ---------- */
 const CF=['cName','cNit','cContact','cPhone','cEmail','cCity'],AF=['aName','aPhone','aEmail','vig'];
 function newNum(){const d=new Date(),z=n=>String(n).padStart(2,'0');return 'COT-'+String(d.getFullYear()).slice(2)+z(d.getMonth()+1)+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes())+'-'+Math.random().toString(36).slice(2,5).toUpperCase()}
-function blank(){return {num:newNum(),plazo:0,lines:[],client:{},origen:'asesor',savedId:null}}
-let S=LS.get('stp_cot',null)||blank();S.lines=(S.lines||[]).filter(l=>BY.has(l.ref));
+function blank(){return {num:newNum(),pago:0,lista:0,lines:[],client:{},origen:'asesor',savedId:null}}
+function fixS(x){if(x.pago==null)x.pago=x.plazo||0;if(x.lista==null)x.lista=x.plazo||0;delete x.plazo;(x.lines||[]).forEach(l=>{if(l.lp==null)l.lp=x.lista});return x}
+let S=fixS(LS.get('stp_cot',null)||blank());S.lines=(S.lines||[]).filter(l=>BY.has(l.ref));
 CF.forEach(f=>{$(f).value=(S.client||{})[f]||''});
 $('obs').value=S.obs||'';
 ['obs'].forEach(f=>$(f).addEventListener('input',()=>{S[f]=$(f).value;S.dirty=true;saveDraft()}));
@@ -414,22 +424,24 @@ const adv=LS.get('stp_adv',{});AF.forEach(f=>{if(adv[f]!=null)$(f).value=adv[f]}
 function saveDraft(){S.client={};CF.forEach(f=>S.client[f]=$(f).value);LS.set('stp_cot',S);const a={};AF.forEach(f=>a[f]=$(f).value);LS.set('stp_adv',a);sums()}
 function sums(){$('clientSum').textContent=[$('cName').value,$('cNit').value].filter(Boolean).join(' · ');$('advSum').textContent=[$('aName').value,'Vigencia '+$('vig').value].filter(Boolean).join(' · ')}
 [...CF,...AF].forEach(f=>$(f).addEventListener('input',()=>{S.dirty=true;saveDraft()}));
-function addLine(ref,qty=1){const ex=S.lines.find(l=>l.ref===ref);if(ex)ex.qty+=qty;else S.lines.push({ref,qty,d:marginAllVal()??0});S.dirty=true;render();toast('Agregado: '+BY.get(ref).desc)}
-$('plazo').innerHTML=PLAZOS.map((p,i)=>`<button data-i="${i}">${p}</button>`).join('');
-$('plazo').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.plazo=+b.dataset.i;S.dirty=true;render();renderCatalog()});
+function addLine(ref,qty=1){const ex=S.lines.find(l=>l.ref===ref);if(ex)ex.qty+=qty;else{const mv=marginAllVal();S.lines.push({ref,qty,lp:mv!=null?AJ:S.lista,d:mv??0})}S.dirty=true;render();toast('Agregado: '+BY.get(ref).desc)}
+$('plazo').innerHTML=LISTAS.map((p,i)=>`<button data-i="${i}" title="${i===AJ?'Precio de contado con el descuento que digites (máximo '+DESC_MAX*100+'%)':'Aplica esta lista a todos los productos'}">${p}</button>`).join('');
+$('pago').innerHTML=PLAZOS.map((p,i)=>`<button data-i="${i}">${p}</button>`).join('');
+$('pago').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.pago=+b.dataset.i;S.dirty=true;render()});
+$('plazo').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.lista=+b.dataset.i;S.lines.forEach(l=>l.lp=S.lista);S.dirty=true;render();renderCatalog()});
 function marginAllVal(){const v=$('mAll').value;return v===''?null:Math.min(DESC_MAX,Math.max(0,+v/100))}
-$('mAll').addEventListener('change',()=>{const v=marginAllVal();if(v==null)return;$('mAll').value=Math.round(v*1000)/10;S.lines.forEach(l=>l.d=v);S.dirty=true;render()});
+$('mAll').addEventListener('change',()=>{const v=marginAllVal();if(v==null)return;$('mAll').value=Math.round(v*1000)/10;S.lista=AJ;S.lines.forEach(l=>{l.d=v;l.lp=AJ});S.dirty=true;render();renderCatalog()});
 function calc(st=S){
   let base=0,peso=0;const under=[];
   const rows=st.lines.map(l=>{const p=BY.get(l.ref);if(!p)return null;
-    const d=Math.min(DESC_MAX,Math.max(0,l.d||0));const net=price(p,d,st.plazo);
+    const lp=l.lp==null?st.lista:l.lp;const d=lp===AJ?Math.min(DESC_MAX,Math.max(0,l.d||0)):0;const net=price(p,d,lpPlazo(lp));
     base+=net*l.qty;peso+=(p.peso||0)*l.qty;
     const avail=(p.st||0)+(p.buf||0);const short=l.qty>avail;
-    return {l,p,d,net,tot:net*l.qty,ok:true,short,avail}}).filter(Boolean);
+    return {l,p,d,lp,net,tot:net*l.qty,ok:true,short,avail}}).filter(Boolean);
   const iva=Math.round(base*IVA);return {rows,sub:base,dsc:0,base,iva,total:base+iva,peso,under};
 }
 function render(){
-  [...$('plazo').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===S.plazo));
+  [...$('plazo').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===S.lista));[...$('pago').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===S.pago));
   $('qNum').textContent=S.num;
   $('qState').hidden=true;
   const C=calc();
@@ -438,18 +450,19 @@ function render(){
     <td style="min-width:260px"><div class="desc">${esc(r.p.desc)}</div><div class="ref">Ítem ${esc(itm(r.p))} · ${esc(r.p.fab)}</div><div style="margin-top:3px">${stockChip(r.p)}${r.short?` <span class="chip bad">Pide ${r.l.qty.toLocaleString('es-CO')}, hay ${r.avail.toLocaleString('es-CO')}</span>`:''}</div></td>
     <td class="n"><input class="qty" type="number" min="0" step="1" id="lq${i}" value="${r.l.qty}" data-i="${i}" data-k="qty" aria-label="Cantidad"></td>
     <td class="n" style="color:var(--muted)">${kg((r.p.peso||0)*r.l.qty)}</td>
-    <td class="n"><input class="disc" type="number" min="0" max="${DESC_MAX*100}" step="0.5" id="lm${i}" value="${Math.round(r.d*1000)/10}" data-i="${i}" data-k="d" aria-label="Descuento %"></td>
+    <td><select class="lp" data-i="${i}" data-k="lp" aria-label="Lista de precios">${LISTAS.map((x,k)=>`<option value="${k}" ${k===r.lp?'selected':''}>${x}</option>`).join('')}</select></td>
+    <td class="n"><input class="disc" type="number" min="0" max="${DESC_MAX*100}" step="0.5" id="lm${i}" value="${Math.round(r.d*1000)/10}" data-i="${i}" data-k="d" aria-label="Descuento %" ${r.lp===AJ?'':'disabled title="Elige la lista Ajustado para dar descuento"'}></td>
     <td class="n">${cop(r.net)}</td><td class="n" style="font-weight:800">${cop(r.tot)}</td>
     <td><button class="btn ghost sm" data-del="${i}" aria-label="Quitar">✕</button></td></tr>`).join('');
   $('tot').innerHTML=`<span>Subtotal</span><span>${cop(C.base)}</span><span>IVA 19%</span><span>${cop(C.iva)}</span><span class="grand">Total</span><span class="grand">${cop(C.total)}</span>`;
-  $('weightBox').innerHTML=S.lines.length?`Peso aproximado: <b class="mono">${kg(C.peso)}</b><br>${S.lines.length} línea${S.lines.length==1?'':'s'} · ${PLAZOS[S.plazo].toLowerCase()}`:'';
+  $('weightBox').innerHTML=S.lines.length?`Peso aproximado: <b class="mono">${kg(C.peso)}</b><br>${S.lines.length} línea${S.lines.length==1?'':'s'} · pago ${PLAZOS[S.pago].toLowerCase()}`:'';
   $('alert').hidden=true;
   const blocked=!S.lines.length||C.under.length>0;
   $('btnGen').disabled=blocked;$('btnCopy').disabled=!S.lines.length;$('btnWa').classList.toggle('off',blocked);
   $('mbarTxt').innerHTML=`${S.lines.length} producto${S.lines.length==1?'':'s'} · <b>${cop(C.total)}</b>`;
   saveDraft();
 }
-$('lines').addEventListener('change',e=>{const t=e.target;if(!t.dataset.k)return;const l=S.lines[+t.dataset.i];l[t.dataset.k]=t.dataset.k==='d'?Math.min(DESC_MAX,Math.max(0,+t.value||0)/100):Math.max(0,+t.value||0);S.dirty=true;render();const n=$(t.id);n&&n.focus()});
+$('lines').addEventListener('change',e=>{const t=e.target;if(!t.dataset.k)return;const l=S.lines[+t.dataset.i];if(t.dataset.k==='lp'){l.lp=+t.value}else l[t.dataset.k]=t.dataset.k==='d'?Math.min(DESC_MAX,Math.max(0,+t.value||0)/100):Math.max(0,+t.value||0);S.dirty=true;render();const n=$(t.id);n&&n.focus()});
 $('lines').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){S.lines.splice(+b.dataset.del,1);S.dirty=true;render()}});
 $('btnNew').addEventListener('click',()=>{S=blank();CF.forEach(f=>$(f).value='');$('obs').value='';$('mAll').value='';$('sendStatus').innerHTML='';$('dClient').open=true;render();$('cName').focus()});
 $('mbarGo').addEventListener('click',()=>$('quotePanel').scrollIntoView({behavior:'smooth'}));
@@ -458,15 +471,15 @@ $('mbarGo').addEventListener('click',()=>$('quotePanel').scrollIntoView({behavio
 $('btnImp').addEventListener('click',()=>{
   const t=$('impTxt').value;let n=0;const miss=[],free=[],lines=[];
   t.split(/\n/).forEach(ln=>{const fm=ln.match(/(\d+(?:[.,]\d+)?)\s*[x×]\s*(.*?)\s*\[ref \?\]/i);if(fm){free.push(fm[1]+' × '+fm[2]);return}
-    const m=ln.match(/(\d+(?:[.,]\d+)?)\s*[x×]\s*.*?\[(?:ref\.?\s*)?([^\]]+)\]/i);if(m){const ref=m[2].trim(),q=parseFloat(m[1].replace(',','.'));if(BY.has(ref)){lines.push({ref,qty:q,d:0});n++}else miss.push(ref)}});
+    const m=ln.match(/(\d+(?:[.,]\d+)?)\s*[x×]\s*.*?\[(?:ref\.?\s*)?([^\]]+)\]/i);if(m){const ref=m[2].trim(),q=parseFloat(m[1].replace(',','.'));if(BY.has(ref)){lines.push({ref,qty:q,lp:S.lista,d:0});n++}else miss.push(ref)}});
   const g=re=>{const m=t.match(re);return m?m[1].trim():''};
   const map={cName:/Empresa:\s*(.+)/i,cNit:/NIT[^:]*:\s*(.+)/i,cContact:/Nombre:\s*(.+)/i,cPhone:/Tel[ée]fono:\s*(.+)/i,cEmail:/Correo:\s*(.+)/i,cCity:/(?:Ciudad|Entrega)[^:]*:\s*(.+)/i};
   if(!n&&!free.length){$('impMsg').textContent='No encontré productos. Revisa que pegaste el mensaje completo.';return}
-  S={...blank(),plazo:S.plazo,lines,origen:'web'};CF.forEach(f=>$(f).value=g(map[f]));if(!$('cName').value)$('cName').value=$('cContact').value;
+  S={...blank(),pago:S.pago,lista:S.lista,lines,origen:'web'};CF.forEach(f=>$(f).value=g(map[f]));if(!$('cName').value)$('cName').value=$('cContact').value;
   $('impTxt').value='';$('impMsg').textContent=`${n} producto${n==1?'':'s'} importado${n==1?'':'s'}`+(miss.length?` · ${miss.length} referencia(s) ya no están en la lista: ${miss.join(', ')}`:'')+(free.length?` · Sin referencia, búscalos a mano: ${free.join('; ')}`:'');
   $('dClient').open=true;S.dirty=true;render();
 });
-function summaryText(){const C=calc();return [`*Cotización ${S.num} · Soluciones Tubulares*`,`Cliente: ${$('cName').value||'-'}`,`Plazo: ${PLAZOS[S.plazo]}`,'',...C.rows.map(r=>`• ${r.l.qty} × ${r.p.desc} — ${cop(r.net)} c/u = ${cop(r.tot)}`),'',`Subtotal: ${cop(C.base)}`,`IVA 19%: ${cop(C.iva)}`,`*Total: ${cop(C.total)}*`,`Vigencia: ${$('vig').value}`,$('aName').value?`Asesor: ${$('aName').value} ${$('aPhone').value}`:''].join('\n')}
+function summaryText(){const C=calc();return [`*Cotización ${S.num} · Soluciones Tubulares*`,`Cliente: ${$('cName').value||'-'}`,`Condición de pago: ${PLAZOS[S.pago]}`,'',...C.rows.map(r=>`• ${r.l.qty} × ${r.p.desc} — ${cop(r.net)} c/u = ${cop(r.tot)}`),'',`Subtotal: ${cop(C.base)}`,`IVA 19%: ${cop(C.iva)}`,`*Total: ${cop(C.total)}*`,`Vigencia: ${$('vig').value}`,$('aName').value?`Asesor: ${$('aName').value} ${$('aPhone').value}`:''].join('\n')}
 $('btnCopy').addEventListener('click',()=>{const txt=summaryText();navigator.clipboard.writeText(txt).then(()=>toast('Resumen copiado')).catch(()=>{$('impTxt').value=txt;$('dImp').open=true;$('impTxt').select();toast('Selecciona y copia el texto del recuadro')})});
 
 /* ---------- inventario del día ---------- */
@@ -493,7 +506,7 @@ function buildPdfL(L){
   const fh=W*BRAND.hero.h/BRAND.hero.w,hh=L===0?fh:L===1?Math.min(fh,56):0;if(hh===fh)img(BRAND.hero,0,y,W,hh);else if(hh>0){doc.saveGraphicsState();doc.rect(0,y,W,hh,null);doc.clip();doc.discardPath();img(BRAND.hero,0,y-(fh-hh)/2,W,fh);doc.restoreGraphicsState()}y+=hh;if(hh===0){doc.setFillColor(...YEL);doc.rect(0,y-2,W,2,'F')}
   // datos del cliente sobre banda gris
   doc.setFillColor(...G100);doc.rect(0,y,W,84,'F');
-  const cells=[['Cliente',cli],['NIT / C.C.',$('cNit').value],['Contacto',[$('cContact').value,$('cPhone').value].filter(Boolean).join(' · ')],['Obra / entrega',$('cCity').value],['Condición de pago',PLAZOS[S.plazo]],['Correo',$('cEmail').value]];
+  const cells=[['Cliente',cli],['NIT / C.C.',$('cNit').value],['Contacto',[$('cContact').value,$('cPhone').value].filter(Boolean).join(' · ')],['Obra / entrega',$('cCity').value],['Condición de pago',PLAZOS[S.pago]],['Correo',$('cEmail').value]];
   const cw=(W-2*M-2*20)/3;cells.forEach((c,i)=>{const cx=M+(i%3)*(cw+20),cy=y+14+Math.floor(i/3)*36;doc.setFillColor(...YEL);doc.rect(cx,cy,cw,2,'F');
     f('bold',7,MUT);doc.setCharSpace(.8);doc.text(c[0].toUpperCase(),cx,cy+12);doc.setCharSpace(0);{const tv=String(c[1]||'-');let fs=10;f('bold',fs,NAVY);while(fs>7&&doc.getTextWidth(tv)>cw){fs-=.5;doc.setFontSize(fs)}doc.text(doc.splitTextToSize(tv,cw)[0],cx,cy+25)}});
   y+=84+(L>=2?12:18);
