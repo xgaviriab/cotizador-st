@@ -323,7 +323,7 @@ const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
 const _IT=D.items||{};
 const itm=p=>{const v=_IT[p.ref];return v==null||String(v).trim()===''?p.ref:String(v)};
 P.forEach(p=>p.k=norm(itm(p)+' '+p.ref+' '+p.desc+' '+p.fab+' '+p.lin));
-const LINE_ORDER=['Tubería estructural','Tubo cerramiento','Tubo mueble','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Accesorios de acero','Conduit y conducción','PVC presión y acueducto','PVC sanitaria y alcantarillado','CPVC y agua caliente','Aquatherm PP-R','PVC y CPVC (otros)','Soldaduras PVC y pinturas','Soldadura y protección','Otros'];
+const LINE_ORDER=['Tubería estructural','Tubo cerramiento','Tubo mueble','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Accesorios de acero','Conduit acero','Tubería de conducción','Conduit PVC','PVC presión y acueducto','PVC sanitaria y alcantarillado','CPVC y agua caliente','Aquatherm PP-R','PVC y CPVC (otros)','Soldaduras PVC y pinturas','Soldadura y protección','Otros'];
 const PLAZOS=['Contado','15 días','30 días','45 días','60 días'];
 /* Listas de precios por producto: contado a 60 días (2% por cada 15 días) y 'Ajustado', con descuento limitado sobre el precio de contado */
 const LISTAS=[...PLAZOS,'Ajustado'];const AJ=5;const lpPlazo=lp=>lp===AJ?0:lp;
@@ -340,7 +340,7 @@ function num(s){s=String(s).replace(',','.');let m=s.match(/(\d+)\s+(\d+)\/(\d+)
 function natKey(s){const parts=String(s).split(/X/i);return [num(parts[0]),parts[1]?num(parts[1]):0,String(s)]}
 /* espesor en mm para ordenar del calibre más delgado al más grueso */
 /* valor por kilo solo para acero que se vende por peso */
-const KG_LINES=new Set(['Tubería estructural','Tubo mueble','Tubo cerramiento','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Conduit y conducción']);
+const KG_LINES=new Set(['Tubería estructural','Tubo mueble','Tubo cerramiento','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Conduit acero','Tubería de conducción']);
 const perKg=p=>p.peso>=1&&KG_LINES.has(p.lin)&&!/PVC|KRALOY|DUCTO/.test(p.desc.toUpperCase());
 function thick(p){if(p._t!=null)return p._t;let t=9e9;const e=String(p.esp||''),d=p.desc.toUpperCase();let m;
   if((m=e.match(/(\d+(?:\.\d+)?)\s*mm/i)))t=+m[1];
