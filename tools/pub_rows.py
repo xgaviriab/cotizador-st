@@ -30,10 +30,11 @@ for r in raw:
     if not cost or m >= 1:
         continue
     pv = round(cost / (1 - m))
-    rows.append([ref, desc, fab, peso, pv, lin, st or 0, buf or 0, bp, comp, tipo, med, esp, f12])
+    nombre = (r[15] if len(r) > 15 and r[15] else desc)  # nombre claro (mismo del cotizador y del PDF)
+    rows.append([ref, nombre, fab, peso, pv, lin, st or 0, buf or 0, bp, comp, tipo, med, esp, desc, f12])
 # orden: con inventario primero, luego por rotación; la rotación no se publica (solo el orden)
-rows.sort(key=lambda r: (-(1 if (r[6] > 0 or r[7] > 0) else 0), -r[13]))
-rows = [r[:13] for r in rows]
+rows.sort(key=lambda r: (-(1 if (r[6] > 0 or r[7] > 0) else 0), -r[14]))
+rows = [r[:14] for r in rows]
 meta = {'fecha': inv.get('fecha', ''), 'actualizado': inv.get('actualizado', '')}
 items = json.loads(re.search(r'<script id="items" type="application/json">(.*?)</script>', s, re.S).group(1))
 items = {r[0]: items[r[0]] for r in rows if r[0] in items}

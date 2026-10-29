@@ -302,27 +302,27 @@ table.q select{padding:6px 10px;width:auto;font-size:13px;font-weight:500}
 async function boot(){let D;try{const r=await fetch('data.json',{cache:'no-cache'});D=await r.json()}catch(e){document.getElementById('results').innerHTML='<div class="empty">No se pudo cargar la lista de precios. Recarga la página.</div>';return}main(D)}
 function main(D){
 /* ---------- datos ---------- */
-// D.rows: [ref,desc,fabricante,peso,precio contado antes de IVA,linea,propio libre,buffer,BP,comprometido,tipo,medida,espesor]
+// D.rows: [ref,nombre claro,fabricante,peso,precio contado antes de IVA,linea,propio libre,buffer,BP,comprometido,tipo,medida,espesor,descripción lista]
 const RAW=D.rows;
 /* Descuento máximo que puede dar el asesor sobre el precio de lista (ajustable aquí) */
 const DESC_MAX=0.02;
-const P=RAW.map((r,i)=>({ref:r[0],desc:r[1],fab:r[2],peso:r[3],pv:r[4],lin:r[5],st:r[6]||0,buf:r[7]||0,bp:r[8],comp:r[9],tipo:r[10],med:r[11],esp:r[12],o:i}));
+const P=RAW.map((r,i)=>({ref:r[0],desc:r[1],d0:r[13]||r[1],fab:r[2],peso:r[3],pv:r[4],lin:r[5],st:r[6]||0,buf:r[7]||0,bp:r[8],comp:r[9],tipo:r[10],med:r[11],esp:r[12],o:i}));
 const price=(p,d,plazo)=>Math.round(p.pv*(1-(d||0))/Math.pow(0.98,plazo));
 const BY=new Map(P.map(p=>[p.ref,p]));
 // longitud del tramo (6 m, 12 m…) para comparar precios por metro
-P.forEach(p=>{const d=p.desc.toUpperCase().replace(/(?:CAL|ESP)\.?\s*\(?\s*[\d.,]+\s*MM?/g,' ');let L=null;const num=s=>parseFloat(s.replace(',','.'));
+P.forEach(p=>{const d=p.d0.toUpperCase().replace(/(?:CAL|ESP)\.?\s*\(?\s*[\d.,]+\s*MM?/g,' ');let L=null;const num=s=>parseFloat(s.replace(',','.'));
   const mm=d.match(/[*X]\s*(6000|12000|9000|3000)\b/);if(mm)L=+mm[1]/1000;
   if(!L){const c=[...d.matchAll(/(?:X|\s)\s*(\d+(?:[.,]\d+)?)\s*(?:MTRS|MTS|MT|M(?!M))\.?(?![A-Z]{2})/g)].map(x=>num(x[1])).filter(v=>v>=1&&v<=15);if(c.length)L=c[c.length-1]}
   if(!L){const e=d.match(/X\s*(\d+(?:[.,]\d+)?)\s*[A-Z]{0,4}\s*$/);if(e){const v=num(e[1]);if(v>=1&&v<=15)L=v}}
   if(L&&L>=1&&L<=15&&/TUBO|ESTRUCT|PERFIL|ANGULO|PLATINA|CANAL|VIGA|VARILLA|CORREA|CERRAMIENTO|MUEBLE|CONDUIT|IMC|EMT/.test(d)){p.len=L;p.lenL=(Math.round(L*100)/100).toLocaleString('es-CO')+' m'}else{p.len=0;p.lenL=''}});
 // peso faltante: se toma el de otro producto de la misma medida y espesor (p. ej. versión negra del mismo tubo)
-P.forEach(p=>{if(!p.med){const m=p.desc.toUpperCase().match(/\b(\d+(?:[.,]\d+)?)\s*[X*]\s*(\d+(?:[.,]\d+)?)\s*(?:CAL|MM|X6|$)/);if(m&&/TUBO|ESTRUCT|PERFIL/.test(p.desc.toUpperCase()))p.med=m[1]+'X'+m[2]}});
+P.forEach(p=>{if(!p.med){const m=p.d0.toUpperCase().match(/\b(\d+(?:[.,]\d+)?)\s*[X*]\s*(\d+(?:[.,]\d+)?)\s*(?:CAL|MM|X6|$)/);if(m&&/TUBO|ESTRUCT|PERFIL/.test(p.d0.toUpperCase()))p.med=m[1]+'X'+m[2]}});
 {const W=new Map();P.forEach(p=>{if(p.peso>0&&p.med&&p.esp){const k=p.med+'|'+p.esp+'|'+(p.lin||'');if(!W.has(k))W.set(k,p.peso)}});P.forEach(p=>{if(!(p.peso>0)&&p.med&&p.esp){const w=W.get(p.med+'|'+p.esp+'|'+(p.lin||''));if(w){p.peso=w;p.pesoEst=true}}})}
 const pct=m=>(Math.round(m*1000)/10).toLocaleString('es-CO')+'%';
 const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
 const _IT=D.items||{};
 const itm=p=>{const v=_IT[p.ref];return v==null||String(v).trim()===''?p.ref:String(v)};
-P.forEach(p=>p.k=norm(itm(p)+' '+p.ref+' '+p.desc+' '+p.fab+' '+p.lin));
+P.forEach(p=>p.k=norm(itm(p)+' '+p.ref+' '+p.desc+' '+p.d0+' '+p.fab+' '+p.lin));
 const LINE_ORDER=['Tubería estructural','Tubo cerramiento','Tubo mueble','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Accesorios de acero','Conduit acero','Tubería de conducción','Conduit PVC','PVC presión y acueducto','PVC sanitaria y alcantarillado','CPVC y agua caliente','Aquatherm PP-R','PVC y CPVC (otros)','Soldaduras PVC y pinturas','Soldadura y protección','Otros'];
 const PLAZOS=['Contado','15 días','30 días','45 días','60 días'];
 /* Listas de precios por producto: contado a 60 días (2% por cada 15 días) y 'Ajustado', con descuento limitado sobre el precio de contado */
@@ -341,8 +341,8 @@ function natKey(s){const parts=String(s).split(/X/i);return [num(parts[0]),parts
 /* espesor en mm para ordenar del calibre más delgado al más grueso */
 /* valor por kilo solo para acero que se vende por peso */
 const KG_LINES=new Set(['Tubería estructural','Tubo mueble','Tubo cerramiento','Perfiles C y vigas','Ángulos','Platinas','Láminas y cubiertas','Varilla y mallas','Conduit acero','Tubería de conducción']);
-const perKg=p=>p.peso>=1&&KG_LINES.has(p.lin)&&!/PVC|KRALOY|DUCTO/.test(p.desc.toUpperCase());
-function thick(p){if(p._t!=null)return p._t;let t=9e9;const e=String(p.esp||''),d=p.desc.toUpperCase();let m;
+const perKg=p=>p.peso>=1&&KG_LINES.has(p.lin)&&!/PVC|KRALOY|DUCTO/.test(p.d0.toUpperCase());
+function thick(p){if(p._t!=null)return p._t;let t=9e9;const e=String(p.esp||''),d=p.d0.toUpperCase();let m;
   if((m=e.match(/(\d+(?:\.\d+)?)\s*mm/i)))t=+m[1];
   else if((m=e.match(/\.(\d+)"/)))t=+('0.'+m[1])*25.4;
   else if((m=e.match(/(\d+)\/(\d+)"?/)))t=m[1]/m[2]*25.4;
