@@ -373,12 +373,14 @@ function renderCatalog(){
     const sub=[['tipo','Tipo'],['med','Medida / diámetro'],['esp','Espesor / calibre'],['lenL','Longitud']];
     let n=2;
     for(const [k,lab] of sub){
-      const m=facet(A,k);
+      const m=facet(A,k);const miss=A.filter(p=>!p[k]).length;
+      if(F[k]==='*'){crumbs.push([k,'Todos']);continue}
+      if(F[k]==='~'&&miss){crumbs.push([k,'Otros']);A=A.filter(p=>!p[k]);continue}
       if(F[k]&&m.has(F[k])){crumbs.push([k,F[k]]);A=A.filter(p=>p[k]===F[k]);continue}
       F[k]='';
       if(m.size>1||(m.size===1&&k!=='tipo'&&k!=='lenL')){
         const vals=[...m.keys()].sort(k==='tipo'?(a,b)=>m.get(b)-m.get(a):natCmp);
-        steps.push(`<div class="step"><div class="lab"><span class="n">${crumbs.length+1}</span>${lab}</div><div class="chips ${k==='tipo'?'txt':''}">${vals.map(v=>`<button data-set="${k}" data-v="${esc(v)}" aria-pressed="false">${esc(v)}<small>${m.get(v)}</small></button>`).join('')}</div></div>`);
+        steps.push(`<div class="step"><div class="lab"><span class="n">${crumbs.length+1}</span>${lab}</div><div class="chips ${k==='tipo'?'txt':''}">${vals.map(v=>`<button data-set="${k}" data-v="${esc(v)}" aria-pressed="false">${esc(v)}<small>${m.get(v)}</small></button>`).join('')}${miss?`<button data-set="${k}" data-v="~" aria-pressed="false" title="Productos sin este dato">Otros<small>${miss}</small></button>`:''}<button data-set="${k}" data-v="*" aria-pressed="false" title="Ver todos sin filtrar por este paso">Ver todos<small>${A.length}</small></button></div></div>`);
         break; // un paso a la vez
       }
       n++;
