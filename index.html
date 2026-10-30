@@ -1,4 +1,14 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.btn.off{opacity:.45;pointer-events:none}
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.hab{grid-column:1/-1;display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.4;padding:6px 0}
+.hab input{margin-top:3px;width:18px;height:18px;flex:none}
+.hab.req span{color:var(--bad)}
+.polfoot{text-align:center;font-size:12px;color:var(--muted);padding:22px 12px 90px}
+.polfoot a,.hab a{color:inherit;text-decoration:underline}
+#polDlg{max-width:720px;width:calc(100% - 32px);max-height:85vh;border:0;border-radius:16px;padding:0;background:var(--surface,#fff);color:inherit;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+#polDlg::backdrop{background:rgba(10,20,40,.55)}
+.polbody{padding:22px 24px;overflow:auto;max-height:calc(85vh - 70px);font-size:13.5px;line-height:1.55}
+.polbody h3{margin:0 0 10px;font-size:19px}.polbody h4{margin:16px 0 4px;font-size:14px}
+.polact{padding:12px 24px;border-top:1px solid var(--line);text-align:right}
+.btn.off{opacity:.45;pointer-events:none}
 </style></head><body>
 
 <title>Cotizador ST</title>
@@ -246,6 +256,7 @@ input.disc:disabled{opacity:.55;background:transparent}
         <label class="f">Teléfono<input type="text" id="cPhone"></label>
         <label class="f">Correo<input type="text" id="cEmail"></label>
         <label class="f">Obra / ciudad de entrega<input type="text" id="cCity"></label>
+        <label class="hab"><input type="checkbox" id="cHab"> <span>El cliente autorizó el tratamiento de sus datos personales (Ley 1581 de 2012 y Decreto 1377 de 2013). <a href="#" class="polLink">Ver política de privacidad</a></span></label>
       </div>
     </details>
     <details class="box" id="dAdv"><summary>Asesor y condiciones <small id="advSum"></small></summary>
@@ -291,7 +302,58 @@ input.disc:disabled{opacity:.55;background:transparent}
 </section>
 
 
+<footer class="polfoot"><a href="#" class="polLink">Política de tratamiento de datos personales</a> · Ley 1581 de 2012 · <a href="mailto:oficialdedatos@solucionestubulares.com">oficialdedatos@solucionestubulares.com</a></footer>
 </main>
+<dialog id="polDlg" aria-label="Política de privacidad"><div class="polbody"><h3>Política de Privacidad de Soluciones Tubulares S.A</h3>
+<p>Esta Política de Privacidad describe cómo Soluciones Tubulares S.A. recopila, utiliza y comparte tu información personal, en cumplimiento de la Ley 1581 de 2012 y el Decreto 1377 de 2013, cuando visitas o realizas una compra en https://tiendaweb.solucionestubulares.com.</p>
+<h4>Cumplimiento legal</h4>
+<p>Soluciones Tubulares S.A. podrá compartir tu Información Personal en cumplimiento con las leyes y regulaciones aplicables, para responder a una solicitud, una orden de registro u otros requerimientos legales, civiles, penales, siempre y cuando dicha solicitud, se realice mediante notificación formal por parte de entes Oficiales, Nacionales, Territoriales, Regionales, etc.</p>
+<h4>Autorización de tratamiento de datos</h4>
+<p>Al aceptar esta Política de Privacidad, el Usuario autoriza de manera previa, informada, voluntaria y expresa a Soluciones Tubulares para el tratamiento de sus datos personales, de conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013. Esta autorización incluye la recolección, almacenamiento, uso y procesamiento de los datos personales del Usuario para las finalidades descritas en esta política.</p>
+<h4>¿Qué información personal recopilamos?</h4>
+<p>Cuando visitas el Sitio, recopilamos automáticamente cierta información sobre tu dispositivo, incluyendo tu navegador web, dirección IP, zona horaria y algunas de las cookies que están instaladas en tu dispositivo. Utilizamos cookies esenciales (como las necesarias para el carrito de compras) y cookies de análisis (como las de Google Analytics). Puedes consultar nuestra Política de Cookies para más detalles sobre los tipos de cookies que utilizamos, qué datos recopilan y cómo puedes controlarlas.</p>
+<p>Cuando realizas una compra, recopilamos tu nombre, dirección de facturación, dirección de envío, información de pago (a través de la pasarela de pagos WOMPI, que cumple con los estándares de seguridad PCI DSS), dirección de correo electrónico y número de teléfono.</p>
+<h4>Otras herramientas de seguimiento</h4>
+<p>Además de las cookies y los archivos de registro, Soluciones Tubulares S.A. puede utilizar otras herramientas de seguimiento y tecnologías similares, como web beacons (píxeles invisibles) y tracking pixels, para recopilar información sobre la actividad del Usuario en el Sitio y mejorar la funcionalidad y el rendimiento del mismo, esta información no tiene ningún impacto sobre la información sensible y privada del titular de datos.</p>
+<h4>Información del Pedido</h4>
+<p>Además, cuando efectúas una compra o intentas realizar una compra a través del Sitio, recopilamos cierta información tuya, como tu nombre, dirección de facturación, dirección de envío, información de pago a través de la pasarela de pagos WOMPI (incluidos números de tarjetas de crédito, cuenta bancaria, transacciones, etc.), dirección de correo electrónico y número de teléfono. Esto se denomina Información del Pedido.</p>
+<h4>Seguridad de la información de pago</h4>
+<p>Soluciones Tubulares S.A. se compromete a garantizar la seguridad de la información de pago del Usuario. Para ello, utiliza la pasarela de pagos WOMPI, que cumple con los estándares de seguridad PCI DSS y utiliza medidas de seguridad como el cifrado de datos y la tokenización para proteger la información financiera del Usuario.</p>
+<h4>Información Personal</h4>
+<p>Al referirnos a Información Personal en esta Política de Privacidad, estamos hablando tanto de la Información del Dispositivo (actividad dentro del sitio web, como vistas en páginas, clics, etc.) y como de la Información del Pedido.</p>
+<h4>Cómo usamos tu información personal</h4>
+<p>Utilizamos la Información del Pedido que recopilamos por lo general para cumplir con los pedidos realizados a través del Sitio (incluido el procesamiento de tu información de pago, la organización del envío y el envío de facturas y/o confirmaciones de pedidos).</p>
+<p>Además, usamos esta Información del Pedido para:</p>
+<ul><li>Cumplir con tus pedidos (procesamiento de pagos, envío, facturación).</li><li>Comunicarnos contigo sobre tus pedidos o consultas.</li><li>Detectar posibles riesgos o fraudes.</li><li>Mejorar y optimizar nuestro sitio web (análisis de uso, tendencias).</li><li>Enviarte información o publicidad relacionada con nuestros productos o servicios, siempre y cuando hayas dado tu consentimiento para ello.</li></ul>
+<p>Esta actividad se realiza bajo el amparo de la autorización de tratamiento de datos otorgada por el Usuario.</p>
+<h4>¿Con quién compartimos tu información personal?</h4>
+<p>Compartimos tu información personal con:</p>
+<ul><li>Proveedores de servicios: Compartimos información con terceros que nos ayudan a operar nuestro sitio web y a prestar nuestros servicios. Estos proveedores incluyen: La pasarela de pagos WOMPI, que procesa tus pagos y protege tu información financiera. Empresas de mensajería, que se encargan del envío de tus pedidos. Plataformas de marketing, que nos ayudan a enviarte publicidad personalizada (si has dado tu consentimiento). Nos aseguramos de que estos terceros cumplan con la legislación colombiana en materia de protección de datos.</li><li>Autoridades legales: Podemos compartir tu información personal si así lo exige la ley o para proteger nuestros derechos.</li></ul>
+<h4>Autorización para compartir información</h4>
+<p>Al aceptar esta Política de Privacidad, el Usuario autoriza a Soluciones Tubulares S.A. a compartir su información personal (los datos de facturación)con terceros (encargados del tratamiento) para las finalidades descritas en esta política. En todo caso, Soluciones Tubulares S.A. se asegurará de que dichos terceros cumplan con la legislación colombiana en materia de protección de datos personales y cuenten con medidas de seguridad adecuadas para proteger la información del Usuario.</p>
+<h4>Google Analytics</h4>
+<p>También empleamos Google Analytics para ayudarnos a comprender cómo nuestros clientes usan Soluciones Tubulares S.A. Puedes obtener más información sobre cómo Google usa tu Información Personal aquí: https://www.google.com/intl/es/policies/privacy/.</p>
+<h4>Cumplimiento legal</h4>
+<p>Finalmente, también podemos compartir tu Información Personal para cumplir con las leyes y regulaciones aplicables, para responder a una citación, una orden de registro u otras solicitudes legales de información que recibimos, o para proteger nuestros derechos.</p>
+<h4>Publicidad de comportamiento</h4>
+<p>Utilizamos tu Información Personal para proporcionarte anuncios específicos o comunicaciones de marketing que creemos que pueden ser de tu interés.</p>
+<h4>Inhabilitar la publicidad dirigida</h4>
+<p>Adicionalmente, puedes inhabilitar la publicidad dirigida a través de los mecanismos generales de "opt-out" de la industria publicitaria, como http://optout.aboutads.info/.</p>
+<h4>Tus derechos</h4>
+<p>Si eres residente en Colombia o habitante (este sitio web solo acepta compras de para residentes) Tienes derecho a acceder, rectificar, actualizar o eliminar tu información personal. También puedes oponerte al tratamiento de tus datos o revocar el consentimiento que nos has dado. Para ejercer tus derechos, contáctanos a oficialdedatos@solucionestubulares.com. Responderemos a tu solicitud en un plazo de 5 a 10 días.</p>
+<p>Además, si eres residente en Colombia, te informamos que estamos procesando tu información para cumplir con los contratos que podríamos tener contigo (por ejemplo, si realizas un pedido a través del Sitio), o de otra manera para perseguir nuestros intereses comerciales legítimos mencionados anteriormente.</p>
+<h4>Retención de datos</h4>
+<p>Conservamos tu información personal durante el tiempo necesario para cumplir con las finalidades para las que fue recopilada y de acuerdo con la legislación aplicable. Los criterios para determinar el plazo de retención son:</p>
+<ul><li>Las finalidades del tratamiento (por ejemplo, cumplir con tu pedido, enviarte publicidad).</li><li>Las obligaciones legales (por ejemplo, conservar la información contable durante un período determinado).</li><li>Los plazos de prescripción (por ejemplo, el plazo para reclamar por un producto defectuoso).</li></ul>
+<h4>Menores de edad</h4>
+<p>El Sitio no está destinado a personas menores de 18 años de edad. Soluciones Tubulares no recopila intencionalmente información personal de menores de edad. Si descubrimos que hemos recopilado información personal de un menor de edad, la eliminaremos de nuestros registros de inmediato.</p>
+<h4>Cambios</h4>
+<p>Podemos actualizar esta política de privacidad de vez en cuando para reflejar, por ejemplo, cambios en nuestras prácticas o por otras razones operativas, legales o reglamentarias. Te recomendamos que revises periódicamente esta política de privacidad para estar al tanto de cualquier cambio y/o modificación.</p>
+<h4>Contacto</h4>
+<p>Si tienes preguntas y/o necesitas más información, no dudes en ponerte en contacto con nosotros a través de oficialdedatos@solucionestubulares.com.</p>
+<p>Esta página de Política de Privacidad fue creada por Soluciones Tubulares SA. Departamento de Marketing y Mercadeo 2025</p>
+<p>Fuente: <a href="https://tiendaweb.solucionestubulares.com/politica-de-privacidad" target="_blank" rel="noopener">tiendaweb.solucionestubulares.com/politica-de-privacidad</a></p>
+</div><div class="polact"><button class="btn primary" id="polClose">Cerrar</button></div></dialog>
 <div class="toast" id="toast" hidden></div>
 
 
@@ -488,6 +550,14 @@ $('btnCopy').addEventListener('click',()=>{const txt=summaryText();navigator.cli
 function initInv(){const v=D.meta||{};if(v.fecha)$('invDate').textContent=v.fecha;const hoy=new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});const fresh=v.actualizado===hoy;$('invDot').className='dot '+(fresh?'ok':'warn');$('stInv').title=fresh?'Actualizado hoy':'Última actualización: '+(v.actualizado||'—')}
 
 /* ---------- PDF ---------- */
+/* Autorización de tratamiento de datos (Ley 1581 de 2012): obligatoria para generar la cotización */
+(function(){const cb=$('cHab');cb.checked=!!S.hab;cb.addEventListener('change',()=>{S.hab=cb.checked;cb.closest('.hab').classList.remove('req');saveDraft()});
+  document.querySelectorAll('.polLink').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const d=$('polDlg');d.showModal?d.showModal():d.setAttribute('open','')}));
+  $('polClose').addEventListener('click',()=>{const d=$('polDlg');d.close?d.close():d.removeAttribute('open')});
+  const guard=e=>{if(!cb.checked){e.preventDefault();e.stopImmediatePropagation();$('dClient').open=true;cb.closest('.hab').classList.add('req');cb.scrollIntoView({behavior:'smooth',block:'center'});toast('Confirma que el cliente autorizó el tratamiento de datos (Ley 1581)')}};
+  ['btnGen','btnWa','btnSend'].forEach(id=>{const b=$(id);if(b)b.addEventListener('click',guard,true)});
+  $('btnNew').addEventListener('click',()=>{cb.checked=false;S.hab=false});})();
+
 const ITEMS=_IT;const itemOf=ref=>{const v=ITEMS[ref];return v==null||v===''?'—':String(v)};
 function buildPdf(){for(const L of [0,1,2,3]){const d=buildPdfL(L);if(d.getNumberOfPages()===1)return d}return buildPdfL(0)}
 function buildPdfL(L){
@@ -526,7 +596,7 @@ function buildPdfL(L){
   const tx=W-M-230,r1=L>=3?12:14,r2=L>=3?32:38,bt=L>=3?44:54,bh=L>=3?40:46;f('normal',10.5,MUT);doc.text('Subtotal antes de IVA',tx,y+r1);doc.text('IVA 19%',tx,y+r2);f('bold',11,INK);doc.text(cop(C.base),W-M,y+r1,{align:'right'});doc.text(cop(C.iva),W-M,y+r2,{align:'right'});
   doc.setDrawColor(...G300);doc.setLineWidth(.5);doc.line(tx,y+r1+8,W-M,y+r1+8);
   doc.setFillColor(...NAVY);doc.rect(tx-10,y+bt,240,bh,'F');doc.setFillColor(...YEL);doc.rect(tx-10,y+bt,4,bh,'F');f('bold',12,[255,255,255]);doc.setCharSpace(1);doc.text('TOTAL',tx+6,y+bt+bh/2+4);doc.setCharSpace(0);f('bold',L>=3?17:19,YEL);doc.text(cop(C.total),W-M-10,y+bt+bh/2+6,{align:'right'});
-  f('normal',8.8,TXT);let ny=y+10;[`Peso aproximado: ${kg(C.peso)}`,'Precios sujetos a disponibilidad de inventario al momento del pedido.',$('obs').value].filter(Boolean).forEach(n=>{const ls=doc.splitTextToSize(n,tx-M-24);doc.text(ls,M,ny);ny+=ls.length*12});
+  f('normal',8.8,TXT);let ny=y+10;[`Peso aproximado: ${kg(C.peso)}`,'Precios sujetos a disponibilidad de inventario al momento del pedido.',$('obs').value,'Datos personales tratados conforme a la Ley 1581 de 2012. Política: tiendaweb.solucionestubulares.com/politica-de-privacidad · oficialdedatos@solucionestubulares.com'].filter(Boolean).forEach(n=>{const ls=doc.splitTextToSize(n,tx-M-24);doc.text(ls,M,ny);ny+=ls.length*12});
   y+=TB;
   // compra con tranquilidad
   const st=[['+31 años','En el mercado desde 1994'],['Desde 24 h','Despacho de pedidos'],['+19.000','Clientes atendidos'],['Disponibilidad','Inventario en todo el país']];
