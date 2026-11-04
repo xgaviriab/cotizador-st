@@ -318,7 +318,10 @@ input.disc:disabled{opacity:.55;background:transparent}
 async function boot(){let D;try{const r=await fetch('data.json',{cache:'no-cache'});D=await r.json()}catch(e){document.getElementById('results').innerHTML='<div class="empty">No se pudo cargar la lista de precios. Recarga la página.</div>';return}
   /* rentabilidad: solo con el enlace de asesor (?a=clave); la clave queda guardada en este equipo */
   let ak=null;try{const u=new URLSearchParams(location.search).get('a');if(u){localStorage.setItem('st_ak',u);history.replaceState(null,'',location.pathname)}ak=localStorage.getItem('st_ak')}catch(e){}
-  if(ak){try{const r=await fetch('/api/rentab?a='+encodeURIComponent(ak),{cache:'no-store'});if(r.ok)D.rent=await r.json();else if(r.status===401){try{localStorage.removeItem('st_ak')}catch(e){}}}catch(e){}}
+  if(ak&&window.crypto&&crypto.subtle){try{const r=await fetch('rentab.enc',{cache:'no-cache'});if(r.ok){const E=await r.json();const u8=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+    const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(ak),'PBKDF2',false,['deriveKey']);
+    const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u8(E.s),iterations:150000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:u8(E.iv)},k,u8(E.ct));D.rent=JSON.parse(new TextDecoder().decode(pt))}}catch(e){/* clave equivocada: se usa sin rentabilidad */try{localStorage.removeItem('st_ak')}catch(_){}}}
   main(D)}
 function main(D){
 /* ---------- datos ---------- */
