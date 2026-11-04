@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.btn.off{opacity:.45;pointer-events:none}
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.btn.off{opacity:.45;pointer-events:none}table.lines input.pf{width:112px;font-weight:600}table.lines input.pf.on{border-color:var(--accent);background:var(--info-bg)}.pfinfo{min-width:150px;font-size:11.5px;color:var(--info);margin-top:4px;line-height:1.35;white-space:normal;text-align:right}.pfinfo.bad{color:var(--bad)}.pfx{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:11.5px;padding:0}
 </style></head><body>
 <title>Cotizador ST</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -315,7 +315,11 @@ input.disc:disabled{opacity:.55;background:transparent}
 
 
 <script>
-async function boot(){let D;try{const r=await fetch('data.json',{cache:'no-cache'});D=await r.json()}catch(e){document.getElementById('results').innerHTML='<div class="empty">No se pudo cargar la lista de precios. Recarga la página.</div>';return}main(D)}
+async function boot(){let D;try{const r=await fetch('data.json',{cache:'no-cache'});D=await r.json()}catch(e){document.getElementById('results').innerHTML='<div class="empty">No se pudo cargar la lista de precios. Recarga la página.</div>';return}
+  /* rentabilidad: solo con el enlace de asesor (?a=clave); la clave queda guardada en este equipo */
+  let ak=null;try{const u=new URLSearchParams(location.search).get('a');if(u){localStorage.setItem('st_ak',u);history.replaceState(null,'',location.pathname)}ak=localStorage.getItem('st_ak')}catch(e){}
+  if(ak){try{const r=await fetch('/api/rentab?a='+encodeURIComponent(ak),{cache:'no-store'});if(r.ok)D.rent=await r.json();else if(r.status===401){try{localStorage.removeItem('st_ak')}catch(e){}}}catch(e){}}
+  main(D)}
 function main(D){
 /* ---------- datos ---------- */
 // D.rows: [ref,nombre claro,fabricante,peso,precio contado antes de IVA,linea,propio libre,buffer,BP,comprometido,tipo,medida,espesor,descripción lista]
@@ -325,6 +329,9 @@ const DESC_MAX=0.02;
 const P=RAW.map((r,i)=>({ref:r[0],desc:r[1],d0:r[13]||r[1],fab:r[2],peso:r[3],pv:r[4],lin:r[5],st:r[6]||0,buf:r[7]||0,bp:r[8],comp:r[9],tipo:r[10],med:r[11],esp:r[12],o:i}));
 const price=(p,d,plazo)=>Math.round(p.pv*(1-(d||0))/Math.pow(0.98,plazo));
 const BY=new Map(P.map(p=>[p.ref,p]));
+/* rentabilidad (asesores autorizados): base = inventario BP si hay existencia propia, si no la última lista */
+const RT=D.rent&&D.rent.c?D.rent.c:null;const RMIN=0.10;
+const rbase=p=>{if(!RT)return null;const x=RT[p.ref];if(!x)return null;const inv=(D.inv||{})[p.ref];const bp=p.bp||0;const v=(bp>0&&x[1]>0)?x[1]:x[0];return v>0?{v,src:(bp>0&&x[1]>0)?'inventario BP':'última lista'}:null};
 // longitud del tramo (6 m, 12 m…) para comparar precios por metro
 P.forEach(p=>{const d=p.d0.toUpperCase().replace(/(?:CAL|ESP)\.?\s*\(?\s*[\d.,]+\s*MM?/g,' ');let L=null;const num=s=>parseFloat(s.replace(',','.'));
   const mm=d.match(/[*X]\s*(6000|12000|9000|3000)\b/);if(mm)L=+mm[1]/1000;
@@ -454,10 +461,10 @@ $('mAll').addEventListener('change',()=>{const v=marginAllVal();if(v==null)retur
 function calc(st=S){
   let base=0,peso=0;const under=[];
   const rows=st.lines.map(l=>{const p=BY.get(l.ref);if(!p)return null;
-    const lp=l.lp==null?st.lista:l.lp;const d=lp===AJ?Math.min(DESC_MAX,Math.max(0,l.d||0)):0;const net=price(p,d,lpPlazo(lp));
+    const lp=l.lp==null?st.lista:l.lp;const pf=RT&&l.pf>0?Math.round(l.pf):0;const d=pf?0:(lp===AJ?Math.min(DESC_MAX,Math.max(0,l.d||0)):0);const net=pf?pf:price(p,d,lpPlazo(lp));const rb=rbase(p);const rm=rb&&net>0?1-rb.v/net:null;
     base+=net*l.qty;peso+=(p.peso||0)*l.qty;
     const avail=(p.st||0)+(p.buf||0);const short=l.qty>avail;
-    return {l,p,d,lp,net,tot:net*l.qty,ok:true,short,avail}}).filter(Boolean);
+    return {l,p,d,lp,pf,rb,rm,low:rm!=null&&rm<RMIN-1e-9,net,tot:net*l.qty,ok:true,short,avail}}).filter(Boolean);
   const iva=Math.round(base*IVA);return {rows,sub:base,dsc:0,base,iva,total:base+iva,peso,under};
 }
 function render(){
@@ -472,7 +479,7 @@ function render(){
     <td class="n" style="color:var(--muted)">${kg((r.p.peso||0)*r.l.qty)}</td>
     <td><select class="lp" data-i="${i}" data-k="lp" aria-label="Lista de precios">${LISTAS.map((x,k)=>`<option value="${k}" ${k===r.lp?'selected':''}>${x}</option>`).join('')}</select></td>
     <td class="n"><input class="disc" type="number" min="0" max="${DESC_MAX*100}" step="0.5" id="lm${i}" value="${Math.round(r.d*1000)/10}" data-i="${i}" data-k="d" aria-label="Descuento %" ${r.lp===AJ?'':'disabled title="Elige la lista Ajustado para dar descuento"'}></td>
-    <td class="n">${cop(r.net)}</td><td class="n" style="font-weight:800">${cop(r.tot)}</td>
+    <td class="n">${RT?`<input class="pf${r.pf?' on':''}" type="number" min="0" step="1" id="lp${i}" value="${r.net}" data-i="${i}" data-k="pf" aria-label="Precio unitario: digita un precio" title="Digita el precio que ya le diste al cliente">`:cop(r.net)}${r.rm!=null?`<div class="pfinfo ${r.low?'bad':''}">${r.pf?'Precio digitado · ':''}Rentab. <b>${pct(r.rm)}</b>${r.low?' · bajo el 10%':''}<br><span>sobre ${r.rb.src}</span>${r.pf?` · <button class="pfx" data-pfx="${i}" title="Volver al precio de lista">Quitar</button>`:''}</div>`:''}</td><td class="n" style="font-weight:800">${cop(r.tot)}</td>
     <td><button class="btn ghost sm" data-del="${i}" aria-label="Quitar">✕</button></td></tr>`).join('');
   $('tot').innerHTML=`<span>Subtotal</span><span>${cop(C.base)}</span><span>IVA 19%</span><span>${cop(C.iva)}</span><span class="grand">Total</span><span class="grand">${cop(C.total)}</span>`;
   $('weightBox').innerHTML=S.lines.length?`Peso aproximado: <b class="mono">${kg(C.peso)}</b><br>${S.lines.length} línea${S.lines.length==1?'':'s'} · pago ${PAGOS[S.pago].toLowerCase()}`:'';
@@ -482,7 +489,8 @@ function render(){
   $('mbarTxt').innerHTML=`${S.lines.length} producto${S.lines.length==1?'':'s'} · <b>${cop(C.total)}</b>`;
   saveDraft();
 }
-$('lines').addEventListener('change',e=>{const t=e.target;if(!t.dataset.k)return;const l=S.lines[+t.dataset.i];if(t.dataset.k==='lp'){l.lp=+t.value}else l[t.dataset.k]=t.dataset.k==='d'?Math.min(DESC_MAX,Math.max(0,+t.value||0)/100):Math.max(0,+t.value||0);S.dirty=true;render();const n=$(t.id);n&&n.focus()});
+$('lines').addEventListener('change',e=>{const t=e.target;if(!t.dataset.k)return;const l=S.lines[+t.dataset.i];if(t.dataset.k==='lp'){l.lp=+t.value;l.pf=null}else if(t.dataset.k==='pf'){const v=Math.round(+t.value||0);const nv=v>0?v:null;if(nv===(l.pf||null))return;l.pf=nv}else l[t.dataset.k]=t.dataset.k==='d'?Math.min(DESC_MAX,Math.max(0,+t.value||0)/100):Math.max(0,+t.value||0);S.dirty=true;render();const n=$(t.id);n&&n.focus()});
+$('lines').addEventListener('mousedown',e=>{const px=e.target.closest('[data-pfx]');if(!px)return;e.preventDefault();S.lines[+px.dataset.pfx].pf=null;S.dirty=true;render()});
 $('lines').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){S.lines.splice(+b.dataset.del,1);S.dirty=true;render()}});
 $('btnNew').addEventListener('click',()=>{S=blank();CF.forEach(f=>$(f).value='');$('obs').value='';$('mAll').value='';$('sendStatus').innerHTML='';$('dClient').open=true;render();$('cName').focus()});
 $('mbarGo').addEventListener('click',()=>$('quotePanel').scrollIntoView({behavior:'smooth'}));

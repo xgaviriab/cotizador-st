@@ -32,7 +32,7 @@ s = re.sub(r'<script>const LOGO=.*?</script>', '', s, count=1, flags=re.S)
 s = re.sub(r'<script id="items" type="application/json">.*?</script>', '', s, count=1, flags=re.S)
 s = re.sub(r'<script id="clientes" type="application/json">.*?</script>\n?', '', s, count=1, flags=re.S)  # directorio de clientes: solo interno
 s = re.sub(r'<script id="data" type="application/json">.*?</script>', '', s, count=1, flags=re.S)
-s = s.replace('</style>', '.btn.off{opacity:.45;pointer-events:none}\n</style>', 1)
+s = s.replace('</style>', '.btn.off{opacity:.45;pointer-events:none}table.lines input.pf{width:112px;font-weight:600}table.lines input.pf.on{border-color:var(--accent);background:var(--info-bg)}.pfinfo{min-width:150px;font-size:11.5px;color:var(--info);margin-top:4px;line-height:1.35;white-space:normal;text-align:right}.pfinfo.bad{color:var(--bad)}.pfx{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:11.5px;padding:0}\n</style>', 1)
 i = s.index('<script>\n/* ---------- datos'); j = s.index('</script>', i)
 s = s[:i] + '<script>\n' + js + s[j:]
 for bad in ['ipanemafarms', 'Costo', 'costo prom', 'costo de', 'margen', 'Margen', 'Nota interna', 'v-lista', 'v-res', 'sendBox', 'btnSave']:
