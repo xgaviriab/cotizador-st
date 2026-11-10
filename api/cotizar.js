@@ -1,4 +1,3 @@
-
 /* POST /api/cotizar: valida la solicitud, asigna asesor y envía correos.
  * Autenticación Microsoft Graph mediante certificado.
  * Variables:
@@ -113,6 +112,7 @@ function mime(m) {
   return [
     `From: Soluciones Tubulares <${m.de}>`,
     `To: ${m.para}`,
+    m.cco ? `Bcc: ${m.cco}` : null,
     m.responderA ? `Reply-To: ${m.responderA}` : null,
     `Subject: ${encabezado(m.asunto)}`,
     'MIME-Version: 1.0',
@@ -445,6 +445,7 @@ export default async function handler(req, res) {
     correo: {
       de: MAIL_FROM,
       para: asesor.correo,
+      cco: 'mercadeo@solucionestubulares.com',
       asunto: alAsesor.asunto,
       texto: alAsesor.texto
     },
@@ -460,6 +461,7 @@ export default async function handler(req, res) {
     await enviarCorreo({
       de: MAIL_FROM,
       para: asesor.correo,
+      cco: 'mercadeo@solucionestubulares.com',
       responderA: datos.correo,
       asunto: alAsesor.asunto,
       texto: alAsesor.texto,
