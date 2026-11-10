@@ -402,23 +402,59 @@ export default async function handler(req, res) {
     );
 
   if (modoPrueba) {
-    return responder(res, 200, {
-      ok: true,
-      numero,
-      prueba: true,
-      correo: {
-        de: MAIL_FROM,
-        para: asesor.correo,
-        asunto: alAsesor.asunto,
-        texto: alAsesor.texto
-      },
-      copiaCliente: {
-        para: datos.correo,
-        asunto: alCliente.asunto,
-        texto: alCliente.texto
-      }
-    });
+  let autenticacion = {
+    probada: false,
+    mensaje: 'No se realizó la autenticación. Verifica las variables de Microsoft.'
+  };
+
+  const certificadoConfigurado =
+    process.env.MS_TENANT_ID &&
+    process.env.MS_CLIENT_ID &&
+    process.env.MS_CERT_THUMBPRINT &&
+    process.env.MS_CERT_PRIVATE_KEY;
+
+  if (certificadoConfigurado) {
+    try {
+      await tokenGraph();
+
+      autenticacion = {
+        probada: true,
+        ok: true,
+        mensaje: 'Microsoft aceptó la autenticación mediante certificado.'
+      };
+
+    } catch (error) {
+      console.error(
+        'cotizar: error de autenticación Microsoft',
+        error.message
+      );
+
+      return responder(res, 502, {
+        ok: false,
+        numero,
+        error: 'No fue posible autenticar la aplicación con Microsoft. Revisa los Runtime Logs de Vercel.'
+      });
+    }
   }
+
+  return responder(res, 200, {
+    ok: true,
+    numero,
+    prueba: true,
+    autenticacion,
+    correo: {
+      de: MAIL_FROM,
+      para: asesor.correo,
+      asunto: alAsesor.asunto,
+      texto: alAsesor.texto
+    },
+    copiaCliente: {
+      para: datos.correo,
+      asunto: alCliente.asunto,
+      texto: alCliente.texto
+    }
+  });
+}
 
   try {
     await enviarCorreo({
